@@ -13,7 +13,7 @@ class FlexRadioDiscoveryPacket:
     application.  The attributes themselves can be accessed directly.
 
     Parameters:
-        None
+        packet_value (dict)  A dictionary containing the key / value pair provided by the packet
 
     Methods:
         None: Only private methods
@@ -36,7 +36,7 @@ class FlexRadioDiscoveryPacket:
         self.fpc_mac
 
     """
-    def __init__(self):
+    def __init__(self, packet_values):
         self.requires_additional_license = None
         self.nickname = None
         self.version = None
@@ -53,14 +53,17 @@ class FlexRadioDiscoveryPacket:
         self.callsign = None
         self.fpc_mac = None
 
-    def assignValues(self, dictionary):
+        self._assignValues(packet_values)
+
+
+    def _assignValues(self, packet_values):
         """
-        obj.assignValues(self, dictionary)
+        obj._assignValues(self, packet_values)
 
         Assign values found in discovery packet to class variables
         """
         obj_var_list = [item for item in dir(self) if not item.startswith("__")]
-        for k, v in dictionary.items():
+        for k, v in packet_values.items():
             if k in obj_var_list:
                 setattr(self, k, v)
             else:
@@ -131,9 +134,7 @@ class FlexRadioDiscoveryListener:
                 key = str(key.replace("b'", ""))
             self.packet_values[key] = value
 
-        discovery_obj = FlexRadioDiscoveryPacket()
-        discovery_obj.assignValues(self.packet_values)
-        return discovery_obj
+        return FlexRadioDiscoveryPacket(self.packet_values)
 
 
 
