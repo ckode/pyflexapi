@@ -96,12 +96,12 @@ class FlexRadioDiscoveryListener:
      obj.getDiscoveryPacket() must be called.
     """
     def __init__(self, ipaddr='0.0.0.0', port=4992, timeout=3):
-        self.sock = socket(AF_INET, SOCK_DGRAM)
-        self.sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.sock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-        self.sock.settimeout(timeout)
-        self.sock.bind((ipaddr, port))
-        self.packet_values = {}
+        self._sock = socket(AF_INET, SOCK_DGRAM)
+        self._sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self._sock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+        self._sock.settimeout(timeout)
+        self._sock.bind((ipaddr, port))
+        self._packet_values = {}
 
     def getDiscoveryPacket(self):
         """
@@ -123,18 +123,20 @@ class FlexRadioDiscoveryListener:
         UDP discovery packet was found.  Otherwise, it returns None.
         """
         try:
-            packet = self.sock.recvfrom(1024)
+            packet = self._sock.recvfrom(1024)
         except timeout as msg:
             return None
 
+        # Trim UDP header, then split settings data up into a list
         plist = str(packet[0][28:]).split(" ")
         for item in plist:
             key, value = item.split("=")
+            # Remove the byte type b' from the beginning of the first key name
             if "b'" in key:
                 key = str(key.replace("b'", ""))
-            self.packet_values[key] = value
+            self._packet_values[key] = value
 
-        return FlexRadioDiscoveryPacket(self.packet_values)
+        return FlexRadioDiscoveryPacket(self._packet_values)
 
 
 
